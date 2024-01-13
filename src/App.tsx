@@ -1,5 +1,5 @@
-import cs from './App.module.css';
-import {useState, MouseEvent, useEffect, useReducer} from 'react';
+import cs from "./App.module.css";
+import { useState, MouseEvent, useEffect, useReducer } from "react";
 import {
   ActionState,
   States,
@@ -8,12 +8,11 @@ import {
   makeMovingConstruct,
   makeConstructMenuOpened,
   makeConstructMenuPrimed,
-} from './states';
-import {Construct, ConstructType, constructReducer} from './constructs';
-import {useMouse} from '@uidotdev/usehooks';
+} from "./states";
+import { Construct, ConstructType, constructReducer } from "./constructs";
+import SourceConstruct from "./constructs/source";
 
 function App() {
-  const [mouse] = useMouse();
   const [actionState, setActionState] = useState<ActionState>(makeIdle());
   const [constructState, constructDispatch] = useReducer(constructReducer, {
     constructs: [],
@@ -21,16 +20,19 @@ function App() {
   });
 
   useEffect(() => {
-    console.log('actionState', actionState);
+    console.log("actionState", actionState);
   }, [actionState]);
   useEffect(() => {
-    console.log('constructs', constructState.constructs);
+    console.log("constructs", constructState.constructs);
   }, [constructState.constructs]);
 
   return (
     <>
       {actionState?.state === States.ConstructMenuOpened && (
-        <div className={cs.createMenu} style={{top: actionState.y, left: actionState.x}}>
+        <div
+          className={cs.createMenu}
+          style={{ top: actionState.y, left: actionState.x }}
+        >
           <span className={cs.createMenuTitle}>CREATE</span>
           <ul>
             {Object.keys(ConstructType).map((cT) => (
@@ -46,8 +48,26 @@ function App() {
           </ul>
         </div>
       )}
-      <svg className={cs.canvas} onMouseDown={handleMouseDown} onMouseUp={handleMouseUp}>
-        {actionState.state === States.MovingConstructs && (
+      <div
+        className={cs.canvas}
+        onMouseDown={handleMouseDown}
+        onMouseUp={handleMouseUp}
+      >
+        {constructState.constructs.map((construct) => (
+          <SourceConstruct
+            construct={construct}
+            constructDispatch={constructDispatch}
+            actionState={actionState}
+            setActionState={setActionState}
+          />
+        ))}
+      </div>
+      {/* <svg
+        className={cs.canvas}
+        onMouseDown={handleMouseDown}
+        onMouseUp={handleMouseUp}
+      >
+        {actionState.state === States.MovingConstruct && (
           <g>
             <line
               x1={actionState.startX}
@@ -77,7 +97,9 @@ function App() {
           const sourceConstruct = constructState.constructs.find(
             (c) => c.id == connection.sourceId
           );
-          const destConstruct = constructState.constructs.find((c) => c.id == connection.destId);
+          const destConstruct = constructState.constructs.find(
+            (c) => c.id == connection.destId
+          );
           if (sourceConstruct && destConstruct) {
             return (
               <line
@@ -93,59 +115,17 @@ function App() {
           }
         })}
         {constructState.constructs.map((construct) => (
-          <g key={construct.id} className={cs.construct}>
-            <rect
-              data-construct-id={construct.id}
-              {...construct.style}
-              stroke="black"
-              onMouseDown={handleConstructMouseDown}
-            />
-            <circle
-              data-construct-id={construct.id}
-              onMouseUp={handlePipeInletMouseUp}
-              cx={getInletCoords(construct).x}
-              cy={getInletCoords(construct).y}
-              r={10}
-              fill="green"
-            />
-            <circle
-              data-construct-id={construct.id}
-              onMouseDown={handlePipeOutletMouseDown}
-              cx={getOutletCoords(construct).x}
-              cy={getOutletCoords(construct).y}
-              r={10}
-              fill="red"
-            />
-          </g>
+          <g key={construct.id} className={cs.construct}></g>
         ))}
-      </svg>
+      </svg> */}
     </>
   );
 
-  function handleConstructMouseDown(event: MouseEvent<SVGRectElement>) {
-    event.stopPropagation();
-    const {clientX, clientY} = event;
-    const construct = constructState.constructs.find(
-      (c) => c.id == event.currentTarget.dataset['constructId']
-    );
-    if (construct) {
-      setActionState(
-        makeMovingConstruct({
-          constructId: construct.id,
-          startX: clientX,
-          startY: clientY,
-          offsetX: clientX - construct.style.x,
-          offsetY: clientY - construct.style.y,
-        })
-      );
-    }
-  }
-
   function handlePipeOutletMouseDown(event: MouseEvent<SVGCircleElement>) {
     event.stopPropagation();
-    const {clientX, clientY} = event;
+    const { clientX, clientY } = event;
     const construct = constructState.constructs.find(
-      (c) => c.id == event.currentTarget.dataset['constructId']
+      (c) => c.id == event.currentTarget.dataset["constructId"]
     );
     if (construct) {
       setActionState(
@@ -161,11 +141,11 @@ function App() {
   function handlePipeInletMouseUp(event: MouseEvent<SVGCircleElement>) {
     event.preventDefault();
     const construct = constructState.constructs.find(
-      (c) => c.id == event.currentTarget.dataset['constructId']
+      (c) => c.id == event.currentTarget.dataset["constructId"]
     );
     if (construct && actionState.state === States.ConnectingConstructs) {
       constructDispatch({
-        type: 'connect_constructs',
+        type: "connect_constructs",
         sourceId: actionState.sourceConstructId,
         destId: construct.id,
       });
@@ -173,28 +153,28 @@ function App() {
   }
 
   function handleMouseDown(event: MouseEvent) {
-    const {clientX, clientY} = event;
+    const { clientX, clientY } = event;
     if (actionState.state == States.Idle) {
-      setActionState(makeConstructMenuPrimed({x: clientX, y: clientY}));
+      setActionState(makeConstructMenuPrimed({ x: clientX, y: clientY }));
     }
   }
 
   function handleMouseUp(event: MouseEvent) {
-    const {clientX, clientY} = event;
-    if (actionState.state === States.MovingConstructs) {
-      constructDispatch({
-        type: 'move_construct',
-        id: actionState.constructId,
-        toX: clientX - actionState.offsetX,
-        toY: clientY - actionState.offsetY,
-      });
-      setActionState(makeIdle());
-    } else if (
+    const { clientX, clientY } = event;
+    // if (actionState.state === States.MovingConstruct) {
+    //   constructDispatch({
+    //     type: "move_construct",
+    //     id: actionState.constructId,
+    //     toX: clientX - actionState.offsetX,
+    //     toY: clientY - actionState.offsetY,
+    //   });
+    //   setActionState(makeIdle());
+    if (
       actionState.state == States.ConstructMenuPrimed &&
       actionState.x == clientX &&
       actionState.y == clientY
     ) {
-      setActionState(makeConstructMenuOpened({x: clientX, y: clientY}));
+      setActionState(makeConstructMenuOpened({ x: clientX, y: clientY }));
     } else {
       setActionState(makeIdle());
     }
@@ -203,7 +183,7 @@ function App() {
   function handleCreateClick(_: MouseEvent, constructType: ConstructType) {
     if (actionState && actionState.state === States.ConstructMenuOpened) {
       constructDispatch({
-        type: 'add_construct',
+        type: "add_construct",
         construct: {
           type: constructType,
           id: constructState.constructs.length.toString(),
@@ -218,19 +198,6 @@ function App() {
     }
     setActionState(makeIdle());
   }
-}
-
-function getOutletCoords(construct: Construct) {
-  return {
-    x: construct.style.x + construct.style.width - 20,
-    y: construct.style.y + construct.style.height / 2,
-  };
-}
-function getInletCoords(construct: Construct) {
-  return {
-    x: construct.style.x + 20,
-    y: construct.style.y + construct.style.height / 2,
-  };
 }
 
 export default App;

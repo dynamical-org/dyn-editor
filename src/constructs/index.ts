@@ -1,3 +1,6 @@
+import { CSSProperties } from "react";
+import { set } from "lodash";
+
 export enum ConstructType {
   Source = "Source",
   Model = "Model",
@@ -8,7 +11,7 @@ export enum ConstructType {
 export type Construct = {
   type: ConstructType;
   id: string;
-  style: Pick<SVGRect, "x" | "y" | "width" | "height"> & Partial<SVGRect>;
+  style: { x: number; y: number } & Partial<CSSProperties>;
 };
 
 type ConstructConnection = {
@@ -41,26 +44,29 @@ export type ConstructStateAction =
   | ConnectConstructs;
 export function constructReducer(
   state: ConstructState,
-  action: ConstructStateAction,
+  action: ConstructStateAction
 ) {
-  console.log(action.type);
   if (action.type === "add_construct") {
     return { ...state, constructs: [...state.constructs, action.construct] };
   }
   if (action.type === "move_construct") {
     const i = state.constructs.findIndex((c) => c.id === action.id);
-    if (i > -1) {
-      state.constructs[i].style.x = action.toX;
-      state.constructs[i].style.y = action.toY;
-    }
+    return set(state, `constructs.${i}.style`, {
+      ...state.constructs[i].style,
+      x: action.toX,
+      y: action.toY,
+    });
   }
   if (action.type === "connect_constructs") {
     return {
       ...state,
-      connections: [...state.connections, {
-        sourceId: action.sourceId,
-        destId: action.destId,
-      }],
+      connections: [
+        ...state.connections,
+        {
+          sourceId: action.sourceId,
+          destId: action.destId,
+        },
+      ],
     };
   }
   return state;

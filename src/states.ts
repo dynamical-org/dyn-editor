@@ -4,7 +4,7 @@ export enum States {
   Idle,
   ConstructMenuPrimed,
   ConstructMenuOpened,
-  MovingConstructs,
+  MovingConstruct,
   ConnectingConstructs,
 }
 
@@ -21,7 +21,7 @@ export type StateCreateMenuOpen = {
 };
 
 export type StateMoveConstruct = {
-  state: States.MovingConstructs;
+  state: States.MovingConstruct;
   constructId: Construct["id"];
   startX: number;
   startY: number;
@@ -48,25 +48,25 @@ export function makeIdle(): ActionState {
 }
 
 export function makeConstructMenuPrimed(
-  props: Omit<StateCreateMenuPrimed, "state">,
+  props: Omit<StateCreateMenuPrimed, "state">
 ): ActionState {
   return { state: States.ConstructMenuPrimed, ...props };
 }
 
 export function makeConstructMenuOpened(
-  props: Omit<StateCreateMenuOpen, "state">,
+  props: Omit<StateCreateMenuOpen, "state">
 ): ActionState {
   return { state: States.ConstructMenuOpened, ...props };
 }
 
 export function makeMovingConstruct(
-  props: Omit<StateMoveConstruct, "state">,
+  props: Omit<StateMoveConstruct, "state">
 ): ActionState {
-  return { state: States.MovingConstructs, ...props };
+  return { state: States.MovingConstruct, ...props };
 }
 
 export function makeConnectingConstructs(
-  props: Omit<StateConnectConstruct, "state">,
+  props: Omit<StateConnectConstruct, "state">
 ): ActionState {
   return { state: States.ConnectingConstructs, ...props };
 }
