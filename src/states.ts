@@ -2,19 +2,26 @@ import { Construct } from "./constructs";
 
 export enum States {
   Idle,
-  OpenCreate,
-  MoveConstruct,
-  ConnectConstruct,
+  ConstructMenuPrimed,
+  ConstructMenuOpened,
+  MovingConstructs,
+  ConnectingConstructs,
 }
 
-export type StateOpenCreate = {
-  state: States.OpenCreate;
+export type StateCreateMenuPrimed = {
+  state: States.ConstructMenuPrimed;
+  x: number;
+  y: number;
+};
+
+export type StateCreateMenuOpen = {
+  state: States.ConstructMenuOpened;
   x: number;
   y: number;
 };
 
 export type StateMoveConstruct = {
-  state: States.MoveConstruct;
+  state: States.MovingConstructs;
   constructId: Construct["id"];
   startX: number;
   startY: number;
@@ -23,7 +30,7 @@ export type StateMoveConstruct = {
 };
 
 export type StateConnectConstruct = {
-  state: States.ConnectConstruct;
+  state: States.ConnectingConstructs;
   sourceConstructId: Construct["id"];
   startX: number;
   startY: number;
@@ -31,7 +38,8 @@ export type StateConnectConstruct = {
 
 export type ActionState =
   | { state: States.Idle }
-  | StateOpenCreate
+  | StateCreateMenuPrimed
+  | StateCreateMenuOpen
   | StateMoveConstruct
   | StateConnectConstruct;
 
@@ -39,20 +47,26 @@ export function makeIdle(): ActionState {
   return { state: States.Idle };
 }
 
-export function makeOpenCreate(
-  props: Omit<StateOpenCreate, "state">,
+export function makeConstructMenuPrimed(
+  props: Omit<StateCreateMenuPrimed, "state">,
 ): ActionState {
-  return { state: States.OpenCreate, ...props };
+  return { state: States.ConstructMenuPrimed, ...props };
 }
 
-export function makeMoveConstruct(
+export function makeConstructMenuOpened(
+  props: Omit<StateCreateMenuOpen, "state">,
+): ActionState {
+  return { state: States.ConstructMenuOpened, ...props };
+}
+
+export function makeMovingConstruct(
   props: Omit<StateMoveConstruct, "state">,
 ): ActionState {
-  return { state: States.MoveConstruct, ...props };
+  return { state: States.MovingConstructs, ...props };
 }
 
-export function makeConnectConstruct(
+export function makeConnectingConstructs(
   props: Omit<StateConnectConstruct, "state">,
 ): ActionState {
-  return { state: States.ConnectConstruct, ...props };
+  return { state: States.ConnectingConstructs, ...props };
 }

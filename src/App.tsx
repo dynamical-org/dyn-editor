@@ -3,10 +3,11 @@ import {useState, MouseEvent, useEffect, useReducer} from 'react';
 import {
   ActionState,
   States,
-  makeConnectConstruct,
+  makeConnectingConstructs,
   makeIdle,
-  makeMoveConstruct,
-  makeOpenCreate,
+  makeMovingConstruct,
+  makeConstructMenuOpened,
+  makeConstructMenuPrimed,
 } from './states';
 import {Construct, ConstructType, constructReducer} from './constructs';
 import {useMouse} from '@uidotdev/usehooks';
@@ -28,7 +29,7 @@ function App() {
 
   return (
     <>
-      {actionState?.state === States.OpenCreate && (
+      {actionState?.state === States.ConstructMenuOpened && (
         <div className={cs.createMenu} style={{top: actionState.y, left: actionState.x}}>
           <span className={cs.createMenuTitle}>CREATE</span>
           <ul>
@@ -45,8 +46,8 @@ function App() {
           </ul>
         </div>
       )}
-      <svg className={cs.canvas} onMouseUp={handleMouseUp}>
-        {actionState.state === States.MoveConstruct && (
+      <svg className={cs.canvas} onMouseDown={handleMouseDown} onMouseUp={handleMouseUp}>
+        {actionState.state === States.MovingConstructs && (
           <g>
             <line
               x1={actionState.startX}
@@ -59,7 +60,7 @@ function App() {
             />
           </g>
         )}
-        {actionState.state === States.ConnectConstruct && (
+        {actionState.state === States.ConnectingConstructs && (
           <g>
             <line
               x1={actionState.startX}
@@ -92,7 +93,7 @@ function App() {
           }
         })}
         {constructState.constructs.map((construct) => (
-          <g key={construct.id}>
+          <g key={construct.id} className={cs.construct}>
             <rect
               data-construct-id={construct.id}
               {...construct.style}
@@ -122,14 +123,14 @@ function App() {
   );
 
   function handleConstructMouseDown(event: MouseEvent<SVGRectElement>) {
-    event.preventDefault();
+    event.stopPropagation();
     const {clientX, clientY} = event;
     const construct = constructState.constructs.find(
       (c) => c.id == event.currentTarget.dataset['constructId']
     );
     if (construct) {
       setActionState(
-        makeMoveConstruct({
+        makeMovingConstruct({
           constructId: construct.id,
           startX: clientX,
           startY: clientY,
@@ -141,14 +142,14 @@ function App() {
   }
 
   function handlePipeOutletMouseDown(event: MouseEvent<SVGCircleElement>) {
-    event.preventDefault();
+    event.stopPropagation();
     const {clientX, clientY} = event;
     const construct = constructState.constructs.find(
       (c) => c.id == event.currentTarget.dataset['constructId']
     );
     if (construct) {
       setActionState(
-        makeConnectConstruct({
+        makeConnectingConstructs({
           sourceConstructId: construct.id,
           startX: clientX,
           startY: clientY,
@@ -162,7 +163,7 @@ function App() {
     const construct = constructState.constructs.find(
       (c) => c.id == event.currentTarget.dataset['constructId']
     );
-    if (construct && actionState.state === States.ConnectConstruct) {
+    if (construct && actionState.state === States.ConnectingConstructs) {
       constructDispatch({
         type: 'connect_constructs',
         sourceId: actionState.sourceConstructId,
@@ -171,9 +172,16 @@ function App() {
     }
   }
 
+  function handleMouseDown(event: MouseEvent) {
+    const {clientX, clientY} = event;
+    if (actionState.state == States.Idle) {
+      setActionState(makeConstructMenuPrimed({x: clientX, y: clientY}));
+    }
+  }
+
   function handleMouseUp(event: MouseEvent) {
     const {clientX, clientY} = event;
-    if (actionState.state === States.MoveConstruct) {
+    if (actionState.state === States.MovingConstructs) {
       constructDispatch({
         type: 'move_construct',
         id: actionState.constructId,
@@ -181,15 +189,19 @@ function App() {
         toY: clientY - actionState.offsetY,
       });
       setActionState(makeIdle());
-    } else if (actionState.state == States.Idle) {
-      setActionState(makeOpenCreate({x: clientX, y: clientY}));
+    } else if (
+      actionState.state == States.ConstructMenuPrimed &&
+      actionState.x == clientX &&
+      actionState.y == clientY
+    ) {
+      setActionState(makeConstructMenuOpened({x: clientX, y: clientY}));
     } else {
       setActionState(makeIdle());
     }
   }
 
   function handleCreateClick(_: MouseEvent, constructType: ConstructType) {
-    if (actionState && actionState.state === States.OpenCreate) {
+    if (actionState && actionState.state === States.ConstructMenuOpened) {
       constructDispatch({
         type: 'add_construct',
         construct: {

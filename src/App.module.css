@@ -29,3 +29,8 @@
 .createMenu ul li:hover {
 	background-color: #eee;
 }
+
+.construct rect {
+	stroke: black;
+	fill: white
+}
