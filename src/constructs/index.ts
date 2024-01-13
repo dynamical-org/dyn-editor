@@ -1,17 +1,26 @@
-import { CSSProperties } from "react";
+import { CSSProperties, ReactElement, ReactNode } from "react";
 import { set } from "lodash";
+import SourceConstruct from "./source";
+import OutputConstruct from "./output";
+
+type Elem = ElemArray;
+export interface ElemArray extends Array<Elem | number> {}
 
 export enum ConstructType {
   Source = "Source",
   Model = "Model",
   Transform = "Transform",
-  Output = "Ouptut",
+  Output = "Output",
 }
 
 export type Construct = {
   type: ConstructType;
   id: string;
-  style: { x: number; y: number } & Partial<CSSProperties>;
+  style:
+    & { x: number; y: number; width: number; height: number }
+    & Partial<CSSProperties>;
+  output?: ElemArray;
+  input?: ElemArray;
 };
 
 type ConstructConnection = {
@@ -38,13 +47,20 @@ type ConnectConstructs = {
   sourceId: Construct["id"];
   destId: Construct["id"];
 };
+type SetConstructOutput = {
+  type: "set_construct_output";
+  id: Construct["id"];
+  value: ElemArray;
+};
 export type ConstructStateAction =
   | ActionAddConstruct
   | ActionMoveConstruct
-  | ConnectConstructs;
+  | ConnectConstructs
+  | SetConstructOutput;
+
 export function constructReducer(
   state: ConstructState,
-  action: ConstructStateAction
+  action: ConstructStateAction,
 ) {
   if (action.type === "add_construct") {
     return { ...state, constructs: [...state.constructs, action.construct] };
@@ -69,6 +85,10 @@ export function constructReducer(
       ],
     };
   }
+  if (action.type === "set_construct_output") {
+    const i = state.constructs.findIndex((c) => c.id === action.id);
+    return set(state, `constructs.${i}.output`, action.value);
+  }
   return state;
 }
 
@@ -86,3 +106,8 @@ export function constructReducer(
 //     }
 //   }
 // }
+
+export const ConstructByType: { [key in ConstructType]: React.FC<any> } = {
+  "Source": SourceConstruct,
+  "Output": OutputConstruct,
+};

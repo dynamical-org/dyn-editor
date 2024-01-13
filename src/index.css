@@ -9,6 +9,12 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
+* {
+  -moz-box-sizing: border-box;
+  -webkit-box-sizing: border-box;
+  box-sizing: border-box;
+}
+
 a {
   font-weight: 500;
   color: #646cff;

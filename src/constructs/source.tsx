@@ -1,127 +1,53 @@
-import React from "react";
-import { Construct, ConstructStateAction } from ".";
-import cs from "../App.module.css";
-import { ActionState, States, makeIdle, makeMovingConstruct } from "../states";
-import { useMouse } from "@uidotdev/usehooks";
+import React from 'react';
+import cs from '../App.module.css';
+import {makeConnectingConstructs} from '../states';
+import ConstructBase, {BaseProps} from './base';
+import {ElemArray} from '.';
 
-type Props = {
-  construct: Construct;
-  actionState: ActionState;
-  setActionState: React.Dispatch<React.SetStateAction<ActionState>>;
-  constructDispatch: React.Dispatch<ConstructStateAction>;
-};
+type Props = BaseProps;
 
-export default function SourceConstruct({
-  construct,
-  actionState,
-  setActionState,
-  constructDispatch,
-}: Props) {
-  // if (
-  //   actionState.state === States.MovingConstruct &&
-  //   actionState.constructId === construct.id
-  // ) {
-  //   style = {
-  //     ...style,
-  //     transform: `translate(${mouse.x - style.left}px,${
-  //       mouse.y - style.top
-  //     }px)`,
-  //   };
-  // }
+export default function SourceConstruct(props: Props) {
+  const {construct, setActionState, constructDispatch} = props;
 
-  const ref = React.useRef<HTMLDivElement>(null);
+  const [arrStr, setArrStr] = React.useState<string>('[1, 2, 3]');
+  const arr = tryParse(arrStr);
   React.useEffect(() => {
-    if (
-      actionState.state === States.MovingConstruct &&
-      actionState.constructId === construct.id
-    ) {
-      const moveWithMouse = (event: MouseEvent) => {
-        if (ref.current && actionState.state === States.MovingConstruct) {
-          ref.current.style["transform"] = `translate(${
-            event.clientX - actionState.startX
-          }px, ${event.clientY - actionState.startY}px)`;
-        }
-      };
+    constructDispatch({type: 'set_construct_output', id: construct.id, value: arr});
+  }, [arr, construct.id, constructDispatch]);
 
-      window.addEventListener("mousemove", moveWithMouse);
-      return () => {
-        if (ref.current) {
-          ref.current.style["transform"] = "";
-        }
-        window.removeEventListener("mousemove", moveWithMouse);
-      };
-    }
-  }, [actionState]);
+  const dims = [arr.length];
 
-  const { x, y, ...styleRest } = construct.style;
   return (
-    <div
-      ref={ref}
-      className={cs.construct}
-      style={{ left: x, top: y, ...styleRest }}
-      onMouseDown={(e: React.MouseEvent) => {
-        const rect = e.currentTarget.getBoundingClientRect();
-        const x = e.clientX;
-        const y = e.clientY;
-        const offsetX = x - rect.left;
-        const offsetY = y - rect.top;
-        setActionState(
-          makeMovingConstruct({
-            constructId: construct.id,
-            startX: x,
-            startY: y,
-            offsetX,
-            offsetY,
-          })
-        );
-        e.stopPropagation();
-      }}
-      onMouseUp={(e: React.MouseEvent) => {
-        const { clientX, clientY } = e;
-        if (actionState.state === States.MovingConstruct) {
-          constructDispatch({
-            type: "move_construct",
-            id: actionState.constructId,
-            toX: clientX - actionState.offsetX,
-            toY: clientY - actionState.offsetY,
-          });
-          setActionState(makeIdle());
-        }
-      }}
-    >
-      Foo
-    </div>
+    <ConstructBase {...props}>
+      <div className={cs.constructType}>SOURCE</div>
+      <input
+        id={`output-${construct.id}`}
+        type="text"
+        value={arrStr}
+        onChange={(e) => setArrStr(e.target.value)}
+      />
+      <div className={cs.dims}>SHAPE: [{dims.join(',')}]</div>
+      <div className={cs.outlet} onMouseDown={handleOutputDrag} />
+    </ConstructBase>
   );
-}
 
-function getOutletCoords(construct: Construct) {
-  return {
-    x: construct.style.left + construct.style.width - 20,
-    y: construct.style.top + construct.style.height / 2,
-  };
-}
-function getInletCoords(construct: Construct) {
-  return {
-    x: construct.style.x + 20,
-    y: construct.style.y + construct.style.height / 2,
-  };
-}
-
-function handleConstructMouseDown(event: React.MouseEvent<SVGRectElement>) {
-  event.stopPropagation();
-  const { clientX, clientY } = event;
-  const construct = constructState.constructs.find(
-    (c) => c.id == event.currentTarget.dataset["constructId"]
-  );
-  if (construct) {
+  function handleOutputDrag(e: React.MouseEvent) {
+    e.stopPropagation();
+    const {clientX, clientY} = e;
     setActionState(
-      makeMovingConstruct({
-        constructId: construct.id,
+      makeConnectingConstructs({
+        sourceConstructId: construct.id,
         startX: clientX,
         startY: clientY,
-        offsetX: clientX - construct.style.x,
-        offsetY: clientY - construct.style.y,
       })
     );
+  }
+}
+
+function tryParse(arrStr: string): ElemArray {
+  try {
+    return JSON.parse(arrStr);
+  } catch (error) {
+    return [];
   }
 }
