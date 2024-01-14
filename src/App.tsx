@@ -19,12 +19,12 @@ function App() {
     connections: [],
   });
 
-  React.useEffect(() => {
-    console.log('actionState', actionState);
-  }, [actionState]);
-  React.useEffect(() => {
-    console.log('constructs', constructState.constructs);
-  }, [constructState.constructs]);
+  // React.useEffect(() => {
+  //   console.log('actionState', actionState);
+  // }, [actionState]);
+  // React.useEffect(() => {
+  //   console.log('constructs', constructState.constructs);
+  // }, [constructState.constructs]);
 
   const activeConnectionRef = React.useRef<SVGLineElement>(null);
   React.useEffect(() => {
@@ -72,6 +72,7 @@ function App() {
           let input;
           if (sourceId) {
             input = constructState.constructs.find((c) => c.id === sourceId)?.output;
+            console.log(input);
           }
           return (
             <ConstructComponent

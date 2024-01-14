@@ -1,7 +1,7 @@
 import { CSSProperties, ReactElement, ReactNode } from "react";
 import { set } from "lodash";
 import SourceConstruct from "./source";
-import OutputConstruct from "./output";
+import TransformConstruct from "./transform";
 
 type Elem = ElemArray;
 export interface ElemArray extends Array<Elem | number> {}
@@ -67,11 +67,13 @@ export function constructReducer(
   }
   if (action.type === "move_construct") {
     const i = state.constructs.findIndex((c) => c.id === action.id);
-    return set(state, `constructs.${i}.style`, {
-      ...state.constructs[i].style,
-      x: action.toX,
-      y: action.toY,
-    });
+    return {
+      ...set(state, `constructs.${i}.style`, {
+        ...state.constructs[i].style,
+        x: action.toX,
+        y: action.toY,
+      }),
+    };
   }
   if (action.type === "connect_constructs") {
     return {
@@ -87,7 +89,7 @@ export function constructReducer(
   }
   if (action.type === "set_construct_output") {
     const i = state.constructs.findIndex((c) => c.id === action.id);
-    return set(state, `constructs.${i}.output`, action.value);
+    return { ...set(state, `constructs.${i}.output`, action.value) };
   }
   return state;
 }
@@ -109,5 +111,5 @@ export function constructReducer(
 
 export const ConstructByType: { [key in ConstructType]: React.FC<any> } = {
   "Source": SourceConstruct,
-  "Output": OutputConstruct,
+  "Transform": TransformConstruct,
 };

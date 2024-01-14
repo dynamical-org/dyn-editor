@@ -3,38 +3,33 @@ import cs from '../App.module.css';
 import {States, makeIdle} from '../states';
 import ConstructBase, {BaseProps} from './base';
 import {ElemArray} from '.';
+import Inlet from './inlet';
+import Outlet from './outlet';
 
 type Props = BaseProps & {input: ElemArray};
 
-type FnStrs = 'avg' | 'sum';
+type FnStrs = 'avg' | 'sum' | 'inc';
 
 const Fns: {[key in FnStrs]: (arr: ElemArray) => ElemArray} = {
   avg: (arr: ElemArray) => arr.reduce((a, b) => a + b, 0) / arr.length,
   sum: (arr: ElemArray) => arr.reduce((a, b) => a + b, 0),
+  inc: (arr: ElemArray) => arr.map((a) => a + 1),
 };
 
-export default function OutputConstruct(props: Props) {
-  const {input, construct, actionState, setActionState, constructDispatch} = props;
+export default function TransformConstruct(props: Props) {
+  const {input, construct, constructDispatch} = props;
 
   const [fnStr, setFnStr] = React.useState<FnStrs>('avg');
+  React.useEffect(() => {
+    const val = tryFn(input, Fns[fnStr]) || [];
+    constructDispatch({type: 'set_construct_output', id: construct.id, value: val});
+  }, [input, construct.id, constructDispatch, fnStr]);
+  const dims = construct.output?.length ? [construct.output.length] : 1;
 
   return (
     <ConstructBase {...props}>
-      <div className={cs.constructType}>OUTPUT</div>
-      <div
-        className={cs.inlet}
-        onMouseUp={(e) => {
-          if (actionState.state === States.ConnectingConstructs) {
-            e.stopPropagation();
-            constructDispatch({
-              type: 'connect_constructs',
-              sourceId: actionState.sourceConstructId,
-              destId: construct.id,
-            });
-            setActionState(makeIdle());
-          }
-        }}
-      />
+      <Inlet {...props} />
+      <div className={cs.constructType}>TRANSFORM</div>
       <select
         value={fnStr}
         onMouseDown={(e) => e.stopPropagation()}
@@ -43,10 +38,13 @@ export default function OutputConstruct(props: Props) {
           setFnStr(e.target.value as FnStrs);
         }}
       >
-        <option value="avg">Avg</option>
+        <option value="avg">Average</option>
         <option value="sum">Sum</option>
+        <option value="inc">Increment</option>
       </select>
-      <div>{tryFn(input, Fns[fnStr])}</div>
+      <div>{JSON.stringify(construct.output)}</div>
+      <div className={cs.dims}>SHAPE: {JSON.stringify(dims)}</div>
+      <Outlet {...props} />
     </ConstructBase>
   );
 }

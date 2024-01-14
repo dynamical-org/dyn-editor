@@ -1,21 +1,21 @@
 import React from 'react';
 import cs from '../App.module.css';
-import {makeConnectingConstructs} from '../states';
 import ConstructBase, {BaseProps} from './base';
 import {ElemArray} from '.';
+import Outlet from './outlet';
 
 type Props = BaseProps;
 
 export default function SourceConstruct(props: Props) {
-  const {construct, setActionState, constructDispatch} = props;
+  const {construct, constructDispatch} = props;
 
-  const [arrStr, setArrStr] = React.useState<string>('[1, 2, 3]');
-  const arr = tryParse(arrStr);
+  const [valStr, setValStr] = React.useState<string>('[1, 2, 3]');
   React.useEffect(() => {
-    constructDispatch({type: 'set_construct_output', id: construct.id, value: arr});
-  }, [arr, construct.id, constructDispatch]);
+    const val = tryParse(valStr);
+    constructDispatch({type: 'set_construct_output', id: construct.id, value: val});
+  }, [valStr, construct.id, constructDispatch]);
 
-  const dims = [arr.length];
+  const dims = [construct.output?.length];
 
   return (
     <ConstructBase {...props}>
@@ -23,30 +23,18 @@ export default function SourceConstruct(props: Props) {
       <input
         id={`output-${construct.id}`}
         type="text"
-        value={arrStr}
-        onChange={(e) => setArrStr(e.target.value)}
+        value={valStr}
+        onChange={(e) => setValStr(e.target.value)}
       />
-      <div className={cs.dims}>SHAPE: [{dims.join(',')}]</div>
-      <div className={cs.outlet} onMouseDown={handleOutputDrag} />
+      <div className={cs.dims}>SHAPE: {JSON.stringify(dims)}</div>
+      <Outlet {...props} />
     </ConstructBase>
   );
-
-  function handleOutputDrag(e: React.MouseEvent) {
-    e.stopPropagation();
-    const {clientX, clientY} = e;
-    setActionState(
-      makeConnectingConstructs({
-        sourceConstructId: construct.id,
-        startX: clientX,
-        startY: clientY,
-      })
-    );
-  }
 }
 
-function tryParse(arrStr: string): ElemArray {
+function tryParse(valStr: string): ElemArray {
   try {
-    return JSON.parse(arrStr);
+    return JSON.parse(valStr);
   } catch (error) {
     return [];
   }
