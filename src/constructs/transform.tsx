@@ -1,30 +1,35 @@
-import React from 'react';
-import cs from '../App.module.css';
-import {States, makeIdle} from '../states';
-import ConstructBase, {BaseProps} from './base';
-import {ElemArray} from '.';
-import Inlet from './inlet';
-import Outlet from './outlet';
+import React from "react";
+import cs from "../App.module.css";
+import ConstructBase, { BaseProps } from "./base";
+import { ElemArray } from ".";
+import Inlet from "./inlet";
+import Outlet from "./outlet";
 
-type Props = BaseProps & {input: ElemArray};
+type Props = BaseProps & { input: ElemArray };
 
-type FnStrs = 'avg' | 'sum' | 'inc';
+type FnStrs = "avg" | "sum" | "inc";
 
-const Fns: {[key in FnStrs]: (arr: ElemArray) => ElemArray} = {
+const Fns: { [key in FnStrs]: (arr: ElemArray) => ElemArray } = {
   avg: (arr: ElemArray) => arr.reduce((a, b) => a + b, 0) / arr.length,
   sum: (arr: ElemArray) => arr.reduce((a, b) => a + b, 0),
   inc: (arr: ElemArray) => arr.map((a) => a + 1),
 };
 
 export default function TransformConstruct(props: Props) {
-  const {input, construct, constructDispatch} = props;
+  const { input, construct, constructDispatch } = props;
 
-  const [fnStr, setFnStr] = React.useState<FnStrs>('avg');
+  const [fnStr, setFnStr] = React.useState<FnStrs>("avg");
   React.useEffect(() => {
     const val = tryFn(input, Fns[fnStr]) || [];
-    constructDispatch({type: 'set_construct_output', id: construct.id, value: val});
+    constructDispatch({
+      type: "set_construct_output",
+      id: construct.id,
+      value: val,
+    });
   }, [input, construct.id, constructDispatch, fnStr]);
-  const dims = construct.output?.length ? [construct.output.length] : 1;
+  const dimStr = construct.output?.length
+    ? JSON.stringify([construct.output.length])
+    : "-";
 
   return (
     <ConstructBase {...props}>
@@ -43,7 +48,7 @@ export default function TransformConstruct(props: Props) {
         <option value="inc">Increment</option>
       </select>
       <div>{JSON.stringify(construct.output)}</div>
-      <div className={cs.dims}>SHAPE: {JSON.stringify(dims)}</div>
+      <div className={cs.dims}>SHAPE: {dimStr}</div>
       <Outlet {...props} />
     </ConstructBase>
   );

@@ -1,0 +1,64 @@
+{
+  "queries": [
+    {
+      "source": "gfs",
+      "columns": [
+        "precipitation",
+        "temperature"
+      ],
+      "siteId": "upstream-demo-folsom-lake",
+      "unitSystem": "US",
+      "timeAggregation": "1H",
+      "aggregationMethod": "mean",
+      "rateVolumeMode": "rate",
+      "initializationTimes": [
+        "2024-01-13T18:00:00.000Z"
+      ]
+    },
+    {
+      "source": "ecmwf-hres",
+      "columns": [
+        "precipitation",
+        "temperature"
+      ],
+      "siteId": "upstream-demo-folsom-lake",
+      "unitSystem": "US",
+      "timeAggregation": "1H",
+      "aggregationMethod": "mean",
+      "rateVolumeMode": "rate",
+      "initializationTimes": [
+        "2024-01-13T12:00:00.000Z"
+      ]
+    },
+    {
+      "source": "hrrr",
+      "columns": [
+        "precipitation",
+        "temperature"
+      ],
+      "siteId": "upstream-demo-folsom-lake",
+      "unitSystem": "US",
+      "timeAggregation": "1H",
+      "aggregationMethod": "mean",
+      "rateVolumeMode": "rate",
+      "initializationTimes": [
+        "2024-01-13T23:00:00.000Z"
+      ]
+    },
+    {
+      "source": "gefs",
+      "columns": [
+        "precipitation",
+        "temperature"
+      ],
+      "siteId": "upstream-demo-folsom-lake",
+      "unitSystem": "US",
+      "timeAggregation": "1H",
+      "aggregationMethod": "mean",
+      "rateVolumeMode": "rate",
+      "initializationTimes": [
+        "2024-01-13T12:00:00.000Z"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,18 @@
+{
+  "queries": [
+    {
+      "source": "hrrr",
+      "columns": [
+        "precipitation",
+        "temperature"
+      ],
+      "siteId": "upstream-demo-folsom-lake",
+      "unitSystem": "US",
+      "timeAggregation": "1H",
+      "aggregationMethod": "mean",
+      "rateVolumeMode": "rate",
+      "startDate": "2024-01-03T08:00:00.000Z",
+      "endDate": "2024-01-24T08:00:00.999Z"
+    }
+  ]
+}

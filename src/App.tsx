@@ -1,5 +1,5 @@
-import cs from './App.module.css';
-import React from 'react';
+import cs from "./App.module.css";
+import React from "react";
 import {
   ActionState,
   States,
@@ -8,16 +8,24 @@ import {
   makeMovingConstruct,
   makeConstructMenuOpened,
   makeConstructMenuPrimed,
-} from './states';
-import {Construct, ConstructByType, ConstructType, constructReducer} from './constructs';
-import SourceConstruct from './constructs/source';
+} from "./states";
+import {
+  Construct,
+  ConstructByType,
+  ConstructType,
+  constructReducer,
+} from "./constructs";
+import SourceConstruct from "./constructs/source";
 
 function App() {
   const [actionState, setActionState] = React.useState<ActionState>(makeIdle());
-  const [constructState, constructDispatch] = React.useReducer(constructReducer, {
-    constructs: [],
-    connections: [],
-  });
+  const [constructState, constructDispatch] = React.useReducer(
+    constructReducer,
+    {
+      constructs: [],
+      connections: [],
+    }
+  );
 
   // React.useEffect(() => {
   //   console.log('actionState', actionState);
@@ -32,14 +40,14 @@ function App() {
     if (actionState.state === States.ConnectingConstructs) {
       const moveWithMouse = (event: MouseEvent) => {
         if (line && actionState.state === States.ConnectingConstructs) {
-          line.setAttribute('x2', `${event.clientX}`);
-          line.setAttribute('y2', `${event.clientY}`);
+          line.setAttribute("x2", `${event.clientX}`);
+          line.setAttribute("y2", `${event.clientY}`);
         }
       };
 
-      window.addEventListener('mousemove', moveWithMouse);
+      window.addEventListener("mousemove", moveWithMouse);
       return () => {
-        window.removeEventListener('mousemove', moveWithMouse);
+        window.removeEventListener("mousemove", moveWithMouse);
       };
     }
   }, [actionState]);
@@ -47,7 +55,10 @@ function App() {
   return (
     <>
       {actionState?.state === States.ConstructMenuOpened && (
-        <div className={cs.createMenu} style={{top: actionState.y, left: actionState.x}}>
+        <div
+          className={cs.createMenu}
+          style={{ top: actionState.y, left: actionState.x }}
+        >
           <span className={cs.createMenuTitle}>CREATE</span>
           <ul>
             {Object.keys(ConstructType).map((cT) => (
@@ -63,7 +74,12 @@ function App() {
           </ul>
         </div>
       )}
-      <div className={cs.canvas} onContextMenu={handleContextMenu} onMouseUp={handleMouseUp}>
+      <div
+        className={cs.canvas}
+        onContextMenu={handleContextMenu}
+        onClick={handleClick}
+        onMouseUp={handleMouseUp}
+      >
         {constructState.constructs.map((construct, i) => {
           const ConstructComponent = ConstructByType[construct.type];
           const sourceId = constructState.connections.find(
@@ -71,7 +87,9 @@ function App() {
           )?.sourceId;
           let input;
           if (sourceId) {
-            input = constructState.constructs.find((c) => c.id === sourceId)?.output;
+            input = constructState.constructs.find(
+              (c) => c.id === sourceId
+            )?.output;
             console.log(input);
           }
           return (
@@ -86,7 +104,7 @@ function App() {
           );
         })}
       </div>
-      <svg className={cs.canvas} style={{pointerEvents: 'none'}}>
+      <svg className={cs.canvas} style={{ pointerEvents: "none" }}>
         {actionState.state === States.ConnectingConstructs && (
           <g>
             <line
@@ -106,7 +124,9 @@ function App() {
           const sourceConstruct = constructState.constructs.find(
             (c) => c.id == connection.sourceId
           );
-          const destConstruct = constructState.constructs.find((c) => c.id == connection.destId);
+          const destConstruct = constructState.constructs.find(
+            (c) => c.id == connection.destId
+          );
           if (sourceConstruct && destConstruct) {
             return (
               <line
@@ -210,11 +230,14 @@ function App() {
   //   }
   // }
 
+  function handleClick() {
+    if (actionState.state === States.ConstructMenuOpened) {
+      setActionState(makeIdle());
+    }
+  }
+
   function handleMouseUp() {
-    if (
-      actionState.state === States.ConstructMenuOpened ||
-      actionState.state === States.ConnectingConstructs
-    ) {
+    if (actionState.state === States.ConnectingConstructs) {
       setActionState(makeIdle());
     }
   }
@@ -222,14 +245,17 @@ function App() {
   function handleContextMenu(e: React.MouseEvent) {
     if (actionState.state == States.Idle) {
       e.preventDefault();
-      setActionState(makeConstructMenuOpened({x: e.clientX, y: e.clientY}));
+      setActionState(makeConstructMenuOpened({ x: e.clientX, y: e.clientY }));
     }
   }
 
-  function handleCreateClick(_: React.MouseEvent, constructType: ConstructType) {
+  function handleCreateClick(
+    _: React.MouseEvent,
+    constructType: ConstructType
+  ) {
     if (actionState && actionState.state === States.ConstructMenuOpened) {
       constructDispatch({
-        type: 'add_construct',
+        type: "add_construct",
         construct: {
           type: constructType,
           id: constructState.constructs.length.toString(),

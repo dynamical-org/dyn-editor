@@ -1,28 +1,19 @@
-import React from "react";
-import cs from "../App.module.css";
-import ConstructBase, { BaseProps } from "./base";
-import { ElemArray } from ".";
-import Outlet from "./outlet";
-import ObsResult from "../data/obs_result.json";
-
-const data = [
-  ObsResult.data[0].map((dStr) => new Date(dStr)), // dates
-  ObsResult.data[1], // temperature
-  ObsResult.data[2], // precip
-];
+import React from 'react';
+import cs from '../App.module.css';
+import ConstructBase, {BaseProps} from './base';
+import {ElemArray} from '.';
+import Outlet from './outlet';
 
 type Props = BaseProps;
 
 export default function SourceConstruct(props: Props) {
-  const { construct, constructDispatch } = props;
+  const {construct, constructDispatch} = props;
 
+  const [valStr, setValStr] = React.useState<string>('[1, 2, 3]');
   React.useEffect(() => {
-    constructDispatch({
-      type: "set_construct_output",
-      id: construct.id,
-      value: data.data,
-    });
-  }, [construct.id, constructDispatch]);
+    const val = tryParse(valStr);
+    constructDispatch({type: 'set_construct_output', id: construct.id, value: val});
+  }, [valStr, construct.id, constructDispatch]);
 
   const dims = [construct.output?.length];
 

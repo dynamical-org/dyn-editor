@@ -2,6 +2,7 @@ import { CSSProperties, ReactElement, ReactNode } from "react";
 import { set } from "lodash";
 import SourceConstruct from "./source";
 import TransformConstruct from "./transform";
+import OuptutConstruct from "./output";
 
 type Elem = ElemArray;
 export interface ElemArray extends Array<Elem | number> {}
@@ -16,9 +17,12 @@ export enum ConstructType {
 export type Construct = {
   type: ConstructType;
   id: string;
-  style:
-    & { x: number; y: number; width: number; height: number }
-    & Partial<CSSProperties>;
+  style: {
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+  } & Partial<CSSProperties>;
   output?: ElemArray;
   input?: ElemArray;
 };
@@ -60,7 +64,7 @@ export type ConstructStateAction =
 
 export function constructReducer(
   state: ConstructState,
-  action: ConstructStateAction,
+  action: ConstructStateAction
 ) {
   if (action.type === "add_construct") {
     return { ...state, constructs: [...state.constructs, action.construct] };
@@ -110,6 +114,7 @@ export function constructReducer(
 // }
 
 export const ConstructByType: { [key in ConstructType]: React.FC<any> } = {
-  "Source": SourceConstruct,
-  "Transform": TransformConstruct,
+  Source: SourceConstruct,
+  Transform: TransformConstruct,
+  Output: OuptutConstruct,
 };
